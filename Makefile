@@ -14,5 +14,8 @@ mount:
 	aviv $(SRC) $(DEST) 12 1024 
 force: 
 	umount -l $(DEST) 
+	
+clean:
+	$(RM) aviv *~ *core
 .PHONY: 
 	all clean tar mount umount force

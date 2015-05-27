@@ -13,27 +13,25 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctime>
-
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <iostream>
 
 #include "log.h"
+
+
 using namespace std;
-
-
 
 FILE *log_open(char* rootdir)
 {
     FILE *logfile;
 
-    // very first thing, open up the logfile and mark that we got in
-    // here.  If we can't open the logfile, we're dead.
 
-    strcat(rootdir,".filesystem.log");
-    //cout<< rootdir<<endl;
+//  strcat(rootdir,".filesystem.log");
+
+	std::cout << rootdir << std::endl;
     logfile = fopen(rootdir, "a+");
-
     if (logfile == NULL)
     {
     	perror("logfile");
@@ -42,7 +40,9 @@ FILE *log_open(char* rootdir)
 
     // set logfile to line buffering
     setvbuf(logfile, NULL, _IOLBF, 0);
-
+    cout<<"herebefore"<<endl;
+	log_msg("hi loser");
+	cout<<"here"<<endl;
     return logfile;
 }
 

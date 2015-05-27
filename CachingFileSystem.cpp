@@ -35,7 +35,7 @@ struct block {
 static vector<block*> cache;
 
 static char* rootdir;
-static unsigned int numberOfBlocks;
+static int numberOfBlocks;
 static int blockSize;
 static char* mountdir;
 struct fuse_operations caching_oper;
@@ -95,6 +95,7 @@ void createBlock(int blockNum, const char* path, char* buf, size_t size ,struct 
  * mount option is given.
  */
 int caching_getattr(const char *path, struct stat *statbuf){
+	cout<<"getattr"<<endl;
 	int retstat = 0;
 	char fpath[PATH_MAX];
 
@@ -121,6 +122,7 @@ int caching_getattr(const char *path, struct stat *statbuf){
  * Introduced in version 2.5
  */
 int caching_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_info *fi){
+	cout<<"fgetatt"<<endl;
     int retstat = 0;
 
     log_msg((char*)" fgetattr");
@@ -153,6 +155,7 @@ int caching_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_in
  */
 int caching_access(const char *path, int mask)
 {
+	cout<<"access"<<endl;
     int retstat = 0;
     char fpath[PATH_MAX];
 
@@ -180,6 +183,7 @@ int caching_access(const char *path, int mask)
  */
 int caching_open(const char *path, struct fuse_file_info *fi){
 
+	cout<<"open"<<endl;
     int retstat = 0;
     int fd;
     char fpath[PATH_MAX];
@@ -236,16 +240,17 @@ int caching_read(const char *path, char *buf, size_t size, off_t offset,
 			if((strcmp(cache.at(j)->fileName,path)) && (cache.at(j)->blockNum == i))
 			{
 				numBlockInsert--;
+				cache.at(j)->accessTimes++;
 				arrOfNumInsert[i] = -1;
 			}
 		}
 	}
-	if (cache.size() + numBlockInsert > numberOfBlocks)
+	if (cache.size() + numBlockInsert > (int)numberOfBlocks)
 	{
 		int blockToDelete = (cache.size() + numBlockInsert) - numberOfBlocks;
 		lfu(blockToDelete);
 	}
-	unsigned int k;
+	unsigned int  k;
 	for(k = 0; k < toBlock; k++)
 	{
 		if (arrOfNumInsert[k] != -1)
@@ -453,17 +458,17 @@ void caching_destroy(void *userdata){
 int caching_ioctl (const char *, int cmd, void *arg,
 		struct fuse_file_info *, unsigned int flags, void *data){
     log_msg((char*)" ioctl");
-//    char* tempChar;
-//    char* blockN;
-    char* accessT;
-    unsigned int i;
+    //char* tempChar;
+    //char* blockN;
+    //char* accessT;
+    int i;
     for ( i = 0; i < cache.size(); i++)
     {
     	//strcat(tempChar, cache[i]->fileName);
 
     	//itoa (cache[i]->blockNum, blockN, 10);
     	//strcat(tempChar, blockN);
-    	//snprint (cache[i]->accessTimes, accessT, 10);
+    	//itoa (cache[i]->accessTimes, accessT, 10);
     	//strcat(tempChar, accessT);
     	//fputs(tempChar,logfile);
     }
@@ -518,7 +523,12 @@ void init_caching_oper()
 
 //basic main. You need to complete it.
 int main(int argc, char* argv[]){
-
+	
+	int i;
+	for(i = 0; i < 5 ; i++)
+	{
+		cout << argv[i] << endl;
+	}
 	init_caching_oper();
 	rootdir = argv[1];
 	mountdir = argv[2];
@@ -528,11 +538,19 @@ int main(int argc, char* argv[]){
 	for (int i = 2; i< (argc - 1); i++){
 		argv[i] = NULL;
 	}
-        argv[2] = (char*) "-s";
-        argv[3] = (char*) "-f";
-	argc = 4;
-	logfile = log_open(rootdir);
-
+    argv[2] = (char*) "-s";
+	argv[3] = (char*) "-f";
+	argc = 4;        
+        
+    char fpath[PATH_MAX];
+    //add dot
+    //add dot
+    caching_fullpath(fpath, "/filesystem.log");
+	logfile = log_open(fpath);
+	cout<<"moshemoshe"<<endl;
+	
 	int fuse_stat = fuse_main(argc, argv, &caching_oper, NULL);
+	
+	
 	return fuse_stat;
 }
